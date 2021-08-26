@@ -1,30 +1,48 @@
-import React, {useContext} from 'react';
-import {StyleSheet} from 'react-native';
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-native/no-inline-styles */
+import React, {useContext, useEffect} from 'react';
+import {StyleSheet, View, Animated} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {GradientContext} from '../context/GradientContext';
+import {useFade} from '../hooks/useFade';
 
 interface Props {
   children: JSX.Element | JSX.Element[];
 }
 const GradientBackground = ({children}: Props) => {
-  const {colors} = useContext(GradientContext);
+  const {colors, prevColors, setMainPrevColors} = useContext(GradientContext);
+  const {fadeIn, fadeOut, opacity} = useFade();
+
+  useEffect(() => {
+    fadeIn(() => {
+      setMainPrevColors(colors);
+      fadeOut();
+    });
+  }, [colors]);
 
   return (
-    <LinearGradient
-      colors={[colors.primary, colors.secundary, '#FFF']}
-      style={styles.linearGradient}
-      start={{x: 0.1, y: 0.1}}
-      end={{x: 0.5, y: 0.7}}>
+    <View style={{flex: 1}}>
+      <LinearGradient
+        colors={[prevColors.primary, prevColors.secundary, '#FFF']}
+        style={{...StyleSheet.absoluteFillObject}}
+        start={{x: 0.1, y: 0.1}}
+        end={{x: 0.5, y: 0.7}}
+      />
+      <Animated.View
+        style={{
+          ...StyleSheet.absoluteFillObject,
+          opacity: opacity,
+        }}>
+        <LinearGradient
+          colors={[colors.primary, colors.secundary, '#FFF']}
+          style={{...StyleSheet.absoluteFillObject}}
+          start={{x: 0.1, y: 0.1}}
+          end={{x: 0.5, y: 0.7}}
+        />
+      </Animated.View>
       {children}
-    </LinearGradient>
+    </View>
   );
 };
 
 export default GradientBackground;
-
-// Later on in your styles..
-var styles = StyleSheet.create({
-  linearGradient: {
-    flex: 1,
-  },
-});
